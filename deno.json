@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"]
+  },
+  "tasks": {
+    "start:backend": "deno run --allow-net --allow-env --allow-sys --allow-read backend/src/server.ts",
+    "start:frontend": "deno task start --cwd frontend",
+    "dev": "deno run --allow-all backend/src/server.ts"
+  },
+  "importMap": "./import_map.json"
+}

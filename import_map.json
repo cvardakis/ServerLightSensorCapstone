@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.168.0/",
+    "mongodb": "npm:mongodb",
+    "$fresh": "https://deno.land/x/fresh@1.2.0/"
+  }
+}

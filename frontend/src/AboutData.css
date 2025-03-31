@@ -1,0 +1,18 @@
+.about-data {
+    background-color: #444; /* Dark gray background */
+    color: #fff;            /* White text */
+    padding: 1rem;          /* Spacing around the content */
+    margin-top: 1rem;
+    margin-bottom: 1rem;    /* Space beneath the section */
+    border-radius: 4px;     /* Optional rounded corners */
+}
+
+.about-data h2 {
+    margin-top: 0;          /* Remove default top margin on the heading */
+}
+
+.about-data p {
+    margin-bottom: 0;       /* Keep paragraph spacing consistent */
+    line-height: 1.5;       /* Improve readability */
+}
+
