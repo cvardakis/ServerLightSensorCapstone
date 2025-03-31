@@ -1,15 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.436a75ee.css",
-    "main.js": "/static/js/main.c876140a.js",
+    "main.css": "/static/css/main.dd3120c8.css",
+    "main.js": "/static/js/main.16d68648.js",
     "static/js/453.8ab44547.chunk.js": "/static/js/453.8ab44547.chunk.js",
+    "static/media/Background.png": "/static/media/Background.a323e302ed78b3b50606.png",
+    "static/media/Utah_SkyScope_Logo_No_Background.png": "/static/media/Utah_SkyScope_Logo_No_Background.f55c63c1ed74af438c9e.png",
     "index.html": "/index.html",
-    "main.436a75ee.css.map": "/static/css/main.436a75ee.css.map",
-    "main.c876140a.js.map": "/static/js/main.c876140a.js.map",
+    "main.dd3120c8.css.map": "/static/css/main.dd3120c8.css.map",
+    "main.16d68648.js.map": "/static/js/main.16d68648.js.map",
     "453.8ab44547.chunk.js.map": "/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.436a75ee.css",
-    "static/js/main.c876140a.js"
+    "static/css/main.dd3120c8.css",
+    "static/js/main.16d68648.js"
   ]
 }
