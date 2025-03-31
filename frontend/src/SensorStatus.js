@@ -19,7 +19,7 @@ function SensorStatus() {
             simulateFetch().then(handleData).catch(console.error);
         } else {
             // Use the real API call in production
-            fetch('http://localhost:8000/sensorData/latest')
+            fetch('https://utah-skyscope.deno.dev/sensorData/latest')
                 .then((res) => res.json())
                 .then(handleData)
                 .catch((err) => console.error('Error fetching sensor status:', err));

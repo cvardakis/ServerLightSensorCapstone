@@ -1,11 +1,23 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"]
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ]
   },
   "tasks": {
     "start:backend": "deno run --allow-net --allow-env --allow-sys --allow-read backend/src/server.ts",
     "start:frontend": "deno task start --cwd frontend",
     "dev": "deno run --allow-all backend/src/server.ts"
   },
-  "importMap": "./import_map.json"
+  "importMap": "./import_map.json",
+  "deploy": {
+    "project": "e1245dd5-669c-4c34-874c-1ff11378c16f",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "backend/src/server.ts"
+  }
 }
