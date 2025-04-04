@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.dd3120c8.css",
-    "main.js": "/static/js/main.902e741a.js",
+    "main.css": "/static/css/main.1739b12f.css",
+    "main.js": "/static/js/main.854ab744.js",
     "static/js/453.8ab44547.chunk.js": "/static/js/453.8ab44547.chunk.js",
     "static/media/Background.png": "/static/media/Background.a323e302ed78b3b50606.png",
-    "static/media/Utah_SkyScope_Logo_No_Background.png": "/static/media/Utah_SkyScope_Logo_No_Background.f55c63c1ed74af438c9e.png",
+    "static/media/Utah_SkyScope_Logo_No_Background.png": "/static/media/Utah_SkyScope_Logo_No_Background.2649c4cf86154a6607c9.png",
     "index.html": "/index.html",
-    "main.dd3120c8.css.map": "/static/css/main.dd3120c8.css.map",
-    "main.902e741a.js.map": "/static/js/main.902e741a.js.map",
+    "main.1739b12f.css.map": "/static/css/main.1739b12f.css.map",
+    "main.854ab744.js.map": "/static/js/main.854ab744.js.map",
     "453.8ab44547.chunk.js.map": "/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dd3120c8.css",
-    "static/js/main.902e741a.js"
+    "static/css/main.1739b12f.css",
+    "static/js/main.854ab744.js"
   ]
 }

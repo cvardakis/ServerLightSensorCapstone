@@ -37,7 +37,7 @@ function SensorStatus() {
     }
 
     return (
-        <div className="sensor-container">
+        <div className="sensor-card">
             <h2>Sensor Name</h2>
             <button
                 style={{
@@ -55,7 +55,7 @@ function SensorStatus() {
                         {latestMeasurement.value} mag/arcsec<sup>2</sup>
                     </p>
                     <p>
-                        <strong>Timestamp</strong><br />
+                        <strong>UTC Timestamp</strong><br />
                         {new Date(latestMeasurement.timestamp).toLocaleString()}
                     </p>
                 </div>

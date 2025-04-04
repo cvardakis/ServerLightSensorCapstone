@@ -104,25 +104,34 @@ sensorDataRouter.get("/sensorData/latest", async (ctx) => {
 // GET endpoint for last 12 hours.
 sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     try {
+        console.log("[INFO] Route hit: /sensorData/last12hours");
         const now = new Date();
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
         const twelveHoursAgoString = twelveHoursAgo.toISOString().slice(0, 19);
 
-        const results = await sensorDataCollection.find(
-            { utc: { $gte: twelveHoursAgoString } },
-            { sort: { utc: 1 } },
-        ).toArray();
+        const filter = { utc: { $gte: twelveHoursAgoString } };
+        const project = { utc: 1, local: 1, temp: 1, reading: 1, _id: 0 };
+        const sort = { utc: 1 };
 
+        // Query and convert to array.
+        const latestCursor = sensorDataCollection.find(filter, { projection: project, sort });
+        const result = await latestCursor.toArray();
+
+        if (!result || result.length === 0) {
+            ctx.response.status = 404;
+            ctx.response.body = { error: "No sensor data found" };
+            return;
+        }
+
+        // Return all data points.
         ctx.response.status = 200;
-        ctx.response.body = results.map((doc) => ({
-            value: doc.reading,
-            timestamp: doc.utc,
-        }));
+        ctx.response.body = result;
     } catch (error) {
-        console.error("Error retrieving last 12 hours of sensor data:", error);
+        console.error("Error retrieving sensor data:", error);
         ctx.response.status = 500;
         ctx.response.body = { error: "Internal server error", details: error.message };
     }
 });
+
 
 export default sensorDataRouter;

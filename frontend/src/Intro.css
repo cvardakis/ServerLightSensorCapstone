@@ -2,7 +2,7 @@
     /*padding: 80px; !* push content below the header's height *!*/
     /*height: 100vh;*/
     /*background: url('Assets/Background.png') center/cover no-repeat;*/
-    display: flex;
+    /*display: flex;*/
     flex-direction: column;
     /*justify-content: center;*/
     /*align-items: center;*/
@@ -10,11 +10,11 @@
 }
 
 .intro-container h1 {
-    margin-top: 150px;  /* remove default heading top margin if you like */
-    padding-top: 100px;
+    /*margin-top: 150px;  !* remove default heading top margin if you like *!*/
+    /*padding-top: 100px;*/
 }
 
 .intro-container p {
     margin-bottom: 0; /* keep paragraphs tight if you prefer */
-    padding-left: 2.2rem;
+    /*padding-left: 2.2rem;*/
 }

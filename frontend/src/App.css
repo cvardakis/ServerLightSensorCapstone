@@ -1,20 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 
 
-html, body {
+body {
   margin: 0;
+  padding: 0rem 2rem;
+  color: white;
   box-sizing: border-box;
   font-family: 'Orbitron', sans-serif;
 }
 
-html, body {
-  color: white;
-}
-
-body {
+html {
   background: url('Assets/Background.png') no-repeat center center fixed;
   background-size: cover;
-  padding-left: 2rem;
+
   /* background-attachment: fixed; is implied by “fixed” in the shorthand above */
 }
 
