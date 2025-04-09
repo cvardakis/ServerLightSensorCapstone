@@ -1,31 +1,28 @@
-// src/App.js
+// App.jsx
 import React from 'react';
-import SensorStatus from './SensorStatus';
 import Header from './Header';
-import Intro from './Intro';
-import AboutData from './AboutData';
-import LineGraph from "./ReactChartsLine"
-import './App.css';
-// import MUILineGraph from "./MUILineGraph";
-// import SensorGraph from './SensorGraph';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Home from './Home';
+// import AboutPage from './AboutPage';
+import DataPage from './DataPage';
 
 function App() {
     return (
-    <div className="App" >
-        <Header/>
-        <Intro/>
-        <h2>Sensor Dashboard</h2>
-        <SensorStatus/>
-        <AboutData/>
-        {/*<MUILineGraph/>*/}
-        <div style={{ width: '100%', height: 400 }}>
-            <LineGraph/>
-        </div>
-        {/*<hr style={{margin: '20px 0'}}/>*/}
-        {/*<SensorGraph />*/}
-    </div>
-)
-    ;
+        <Router>
+            <div>
+                <Header />
+
+                <main>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        {/*<Route path="/about" element={<AboutPage />} />*/}
+                        <Route path="/data" element={<DataPage />} />
+                    </Routes>
+                </main>
+
+            </div>
+        </Router>
+    );
 }
 
 export default App;

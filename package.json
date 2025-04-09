@@ -4,6 +4,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.0.1",
     "@mui/x-charts": "^7.28.0",
+    "cors": "^2.8.5",
     "ract": "^0.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

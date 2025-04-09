@@ -14,12 +14,17 @@ import sensorAuthRouter from "./routes/sensorAuth.ts";  // Make sure sensorAuthR
 // import { postSensorDataHandler } from "./routes/sensorData.ts";
 
 import "https://deno.land/std@0.221.0/dotenv/load.ts";
+import { oakCors } from "https://deno.land/x/cors/mod.ts";
 
 // 1. Connect to MongoDB before starting the server.
 await connectDB();
 
 // 2. Create an Oak application.
 const app = new Application();
+
+app.use(oakCors({
+    origin: "http://localhost:3000", // or '*' for all origins
+}));
 
 // 3. Optional: Logging middleware for debugging.
 app.use(async (ctx, next) => {

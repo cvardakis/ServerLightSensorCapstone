@@ -105,30 +105,37 @@ sensorDataRouter.get("/sensorData/latest", async (ctx) => {
 sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensorData/last12hours");
+
         const now = new Date();
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+        // Depending on how your dates are stored, you may want to use twelveHoursAgo directly
+        // or format it appropriately. This example uses an ISO string without milliseconds.
         const twelveHoursAgoString = twelveHoursAgo.toISOString().slice(0, 19);
 
+        // Filter: documents whose utc is greater than or equal to twelveHoursAgoString
         const filter = { utc: { $gte: twelveHoursAgoString } };
         const project = { utc: 1, local: 1, temp: 1, reading: 1, _id: 0 };
         const sort = { utc: 1 };
 
-        // Query and convert to array.
+        // Retrieve the documents as an array.
         const latestCursor = sensorDataCollection.find(filter, { projection: project, sort });
         const result = await latestCursor.toArray();
 
         if (!result || result.length === 0) {
             ctx.response.status = 404;
+            ctx.response.type = "application/json";
             ctx.response.body = { error: "No sensor data found" };
             return;
         }
 
-        // Return all data points.
+        // Return the data points.
         ctx.response.status = 200;
+        ctx.response.type = "application/json";
         ctx.response.body = result;
     } catch (error) {
         console.error("Error retrieving sensor data:", error);
         ctx.response.status = 500;
+        ctx.response.type = "application/json";
         ctx.response.body = { error: "Internal server error", details: error.message };
     }
 });
