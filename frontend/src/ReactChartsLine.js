@@ -74,7 +74,7 @@ export default function LineGraph() {
     const [yMin,  setYMin]  = useState(0);
     const [yMax,  setYMax]  = useState(0);
 
-    const apiUrl = process.env.REACT_APP_API_URL || 'https://utah-skyscope.deno.dev';
+    const apiUrl = 'https://utah-skyscope.deno.dev';
 
     // Helper to enforce at least one sensor checked
     const toggleSensor = id => {
