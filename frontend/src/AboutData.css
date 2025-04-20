@@ -1,6 +1,9 @@
 .about-data {
     /*background-color: #444; !* Dark gray background *!*/
     color: #fff;            /* White text */
+    justify-content: center;
+    align-items: center;
+    align-content: center;
     /*padding: 1rem;          !* Spacing around the content *!*/
     /*margin-top: 1rem;*/
     /*margin-bottom: 1rem;    !* Space beneath the section *!*/
@@ -12,7 +15,12 @@
 }
 
 .about-data p {
-    margin-bottom: 0;       /* Keep paragraph spacing consistent */
-    line-height: 1.5;       /* Improve readability */
+      /* Keep paragraph spacing consistent */
+    line-height: 1.5;
+    width: 75%;
 }
 
+.about-text {
+    display: flex;
+    flex-direction: column;
+}

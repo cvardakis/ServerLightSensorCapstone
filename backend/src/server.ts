@@ -2,68 +2,85 @@
  * File: backend/src/server.ts
  * Author:
  * Date: 2/12/25
- * Updated: 2/17/25
- * Description: Controls all DB connections and routes requests using Oak.
+ * Updated: 4/20/25
  */
 
-import { Application, Router, send } from "https://deno.land/x/oak@v12.5.0/mod.ts";
+import { Application, send } from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import { connectDB } from "./db/mongoClient.ts";
 import sensorDataRouter from "./routes/sensorData.ts";
-import sensorAuthRouter from "./routes/sensorAuth.ts";  // Make sure sensorAuthRouter is exported from sensorAuth.ts
-// If you still need the postSensorDataHandler separately, ensure it's imported appropriately.
-// import { postSensorDataHandler } from "./routes/sensorData.ts";
-
+import sensorAuthRouter from "./routes/sensorAuth.ts";
 import "https://deno.land/std@0.221.0/dotenv/load.ts";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
+import { dirname, fromFileUrl, join } from "https://deno.land/std@0.221.0/path/mod.ts";
 
-// 1. Connect to MongoDB before starting the server.
+// ————————————————————————————
+// 1) Build folder resolution
+// server.ts is in backend/src, so go up two levels to reach project-root/frontend/build
+const __dirname  = dirname(fromFileUrl(import.meta.url));
+const buildRoot  = join(__dirname, "../../frontend/build");
+console.log("[INFO] Serving React build from:", buildRoot);
+
+// ————————————————————————————
+// 2) Connect to MongoDB
 await connectDB();
 
-// 2. Create an Oak application.
+// ————————————————————————————
+// 3) Create Oak app
 const app = new Application();
 
-app.use(oakCors({
-    origin: "http://localhost:3000", // or '*' for all origins
-}));
+// CORS (allow your client on port 3000 or change to 8000 if you host both on same origin)
+app.use(oakCors({ origin: "http://localhost:3000" }));
 
-// 3. Optional: Logging middleware for debugging.
+// Simple request logging
 app.use(async (ctx, next) => {
     await next();
-    console.log(`${ctx.request.method} ${ctx.request.url}`);
+    console.log(`${ctx.request.method} ${ctx.request.url.pathname}`);
 });
 
-// 4. Register sensor authentication routes.
-// These routes should use Oak's Request, which provides the body() method.
+// ————————————————————————————
+// 4) API routes
 app.use(sensorAuthRouter.routes());
 app.use(sensorAuthRouter.allowedMethods());
-
-// 5. Register sensor data routes (e.g., GET endpoints like /sensorData/latest).
 app.use(sensorDataRouter.routes());
 app.use(sensorDataRouter.allowedMethods());
 
-// 6. Serve static files from your React build.
-// This middleware comes after API routes so that unmatched routes fall back to React's index.html.
+// ————————————————————————————
+// 5) Static + SPA fallback
+const clientRoutes = new Set([ "/", "/home", "/data", "/about" ]);
+
 app.use(async (ctx, next) => {
-    const path = ctx.request.url.pathname;
-    try {
-        await send(ctx, path, {
-            root: `${Deno.cwd()}/frontend/build`,
-            index: "index.html", // Fallback to index.html for client-side routing.
-        });
-    } catch (error) {
-        console.error("Static file error:", error);
-        await next();
+    const url = ctx.request.url.pathname;
+
+    // 5a) If it's one of your known client routes, always serve index.html
+    if (clientRoutes.has(url)) {
+        await send(ctx, "index.html", { root: buildRoot });
+        return;
     }
+
+    // 5b) Otherwise try to serve a real file (JS/CSS/assets).
+    //     If url maps to a directory (like "/"), index:"index.html" will serve index.html.
+    try {
+        await send(ctx, url, {
+            root: buildRoot,
+            index: "index.html",
+        });
+        return;
+    } catch {
+        // not a file → fall through
+    }
+
+    // 5c) Not an SPA route or a static asset → 404 or next middleware
+    await next();
 });
 
-// 7. Start listening on port 8000.
+// ————————————————————————————
+// 6) Launch
 const PORT = 8000;
 console.log(`[INFO] Server running on http://localhost:${PORT}`);
 await app.listen({ port: PORT });
 
-// 8. Handle SIGINT for graceful shutdown.
+// Graceful shutdown
 Deno.addSignalListener("SIGINT", () => {
     console.log("[INFO] Closing MongoDB connection...");
-    // Perform any additional cleanup tasks here if needed.
     Deno.exit();
 });

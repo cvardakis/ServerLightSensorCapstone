@@ -20,3 +20,7 @@
 .menuContainer section:last-child {
     margin-right: 0;
 }
+
+.section2 div {
+    margin-bottom: 1rem;
+}

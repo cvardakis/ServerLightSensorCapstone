@@ -7,8 +7,6 @@
  *              and provides endpoints to retrieve sensor data.
  */
 
-// In backend/src/routes/sensorData.ts
-
 import { Router } from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import { sensorCollection, sensorDataCollection } from "../db/mongoClient.ts";
 
@@ -69,16 +67,22 @@ sensorDataRouter.post("/sensor-data", async (ctx) => {
     }
 });
 
-// GET endpoints (unchanged for now)
+// GET endpoint to retrieve the latest sensor data.
+// GET endpoint to retrieve the latest sensor data.
 sensorDataRouter.get("/sensorData/latest", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensorData/latest");
-        const filter = {};
-        const sort = { utc: -1 };
-        const limit = 1;
 
-        // Query and convert to array.
-        const latestCursor = sensorDataCollection.find(filter, { sort, limit });
+        // grab sensorId if provided
+        const sensorId = ctx.request.url.searchParams.get("sensorId");
+        const filter: Record<string, unknown> = {};
+        if (sensorId) {
+            filter.sensor_id = sensorId;
+        }
+
+        // sort most‐recent first, limit to one
+        const sort = { "local": -1 };
+        const latestCursor = sensorDataCollection.find(filter, { sort, limit: 1 });
         const result = await latestCursor.toArray();
         console.log("[INFO] Query result: ", result);
 
@@ -92,7 +96,7 @@ sensorDataRouter.get("/sensorData/latest", async (ctx) => {
         ctx.response.status = 200;
         ctx.response.body = {
             value: latestData.reading,
-            timestamp: latestData.utc,
+            timestamp: latestData.local,
         };
     } catch (error) {
         console.error("Error retrieving latest sensor data:", error);
@@ -101,21 +105,22 @@ sensorDataRouter.get("/sensorData/latest", async (ctx) => {
     }
 });
 
-// GET endpoint for last 12 hours.
+// GET endpoint for the last 12 hours.
 sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensorData/last12hours");
 
         const now = new Date();
+        console.log("[TROUBLESHOOT] Current Date ", now.toISOString());
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-        // Depending on how your dates are stored, you may want to use twelveHoursAgo directly
-        // or format it appropriately. This example uses an ISO string without milliseconds.
-        const twelveHoursAgoString = twelveHoursAgo.toISOString().slice(0, 19);
+        // Convert to an ISO string without milliseconds if needed.
+        const twelveHoursAgoString = twelveHoursAgo.toISOString().split('.')[0];
+        console.log("[TROUBLESHOOT] 12 hours ago: ", twelveHoursAgoString);
 
-        // Filter: documents whose utc is greater than or equal to twelveHoursAgoString
+        // Filter: documents whose utc is greater than or equal to twelveHoursAgoString.
         const filter = { utc: { $gte: twelveHoursAgoString } };
         const project = { utc: 1, local: 1, temp: 1, reading: 1, _id: 0 };
-        const sort = { utc: 1 };
+        const sort = { local: 1 };
 
         // Retrieve the documents as an array.
         const latestCursor = sensorDataCollection.find(filter, { projection: project, sort });
@@ -140,5 +145,108 @@ sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     }
 });
 
+// GET endpoint to retrieve the list of sensors.
+sensorDataRouter.get("/sensors", async (ctx) => {
+    try {
+        console.log("[INFO] Route hit: /sensors");
+
+        // Define the projection object.
+        const projection = { name: 1, sensor_id: 1, _id: 0 };
+
+        // Use an empty filter {} to retrieve all documents, and pass the projection as the second argument.
+        const cursor = sensorCollection.find({}, { projection });
+        const result = await cursor.toArray();
+
+        if (!result || result.length === 0) {
+            ctx.response.status = 404;
+            ctx.response.type = "application/json";
+            ctx.response.body = { error: "No sensor data found" };
+            return;
+        }
+
+        ctx.response.status = 200;
+        ctx.response.body = result;
+    } catch (error) {
+        console.error("Error retrieving sensor data:", error);
+        ctx.response.status = 500;
+        ctx.response.body = { error: "Internal server error", details: error.message };
+    }
+});
+
+// GET endpoint for filtered sensor data.
+sensorDataRouter.get("/sensorData/filter", async (ctx) => {
+    try {
+        // Extract query params
+        const { searchParams } = ctx.request.url;
+        const sensorParam = searchParams.get("sensor");
+        const startDate   = searchParams.get("startDate");
+        const startTime   = searchParams.get("startTime");
+        const endDate     = searchParams.get("endDate");
+        const endTime     = searchParams.get("endTime");
+
+        console.log("[TROUBLESHOT] Filters:", sensorParam, startDate, startTime, endDate, endTime);
+
+        const filter: Record<string, unknown> = {};
+
+        // Sensor filter
+        if (sensorParam) {
+            const sensorArray = sensorParam.split(",").map(s => s.trim());
+            filter.sensor_id = { $in: sensorArray };
+        }
+
+        // Build raw local-time strings (no UTC conversion)
+        const buildLocalString = (
+            dateStr: string | null,
+            timeStr: string | null,
+            defaultTime: string
+        ): string | null => {
+            if (!dateStr) return null;
+            const time = timeStr ? timeStr : defaultTime;
+            // Ensure HH:mm:ss format
+            const normalized = time.length <= 5 ? `${time}:00` : time;
+            return `${dateStr}T${normalized}`;
+        };
+
+        const startLocal = buildLocalString(startDate, startTime, "00:00:00");
+        const endLocal   = buildLocalString(endDate,   endTime,   "23:59:59");
+
+        // Apply range filter on local (strings)
+        if (startLocal && endLocal) {
+            // Optional check: ensure start <= end
+            if (new Date(startLocal) > new Date(endLocal)) {
+                ctx.response.status = 400;
+                ctx.response.body = { error: "Start date/time is after end date/time." };
+                return;
+            }
+            filter.local = { $gte: startLocal, $lte: endLocal };
+        } else if (startLocal) {
+            filter.local = { $gte: startLocal };
+        } else if (endLocal) {
+            filter.local = { $lte: endLocal };
+        }
+
+        // Projection & sorting
+        const projection = { utc: 1, local: 1, temp: 1, reading: 1, sensor_id: 1, _id: 0 };
+        const sort = { local: 1 };
+
+        console.log("[TROUBLESHOT] Query:", filter);
+        const cursor = sensorDataCollection.find(filter, { projection, sort });
+        const result = await cursor.toArray();
+
+        if (!result.length) {
+            ctx.response.status = 404;
+            ctx.response.body = { error: "No sensor data found" };
+            return;
+        }
+
+        ctx.response.status = 200;
+        ctx.response.body = result;
+
+    } catch (err) {
+        console.error("Error retrieving filtered sensor data:", err);
+        ctx.response.status = 500;
+        ctx.response.body = { error: "Internal server error", details: err.message };
+    }
+});
 
 export default sensorDataRouter;

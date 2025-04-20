@@ -12,6 +12,7 @@ body {
 html {
   background: url('Assets/Background.png') no-repeat center center fixed;
   background-size: cover;
+  line-height: 1.5;
 
   /* background-attachment: fixed; is implied by “fixed” in the shorthand above */
 }

@@ -7,6 +7,15 @@
     text-align: center;
 }
 
+.sensor-status-container {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    display: flex;
+    gap: 1rem;       /* space between cards */
+    padding: 1rem;   /* space around the whole group */
+}
+
 p {
     text-color: white;
 }

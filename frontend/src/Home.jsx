@@ -10,7 +10,7 @@ import './App.css';
 
 function Home() {
     return (
-        <div className="App" >
+        <div className="App">
             <Intro/>
             <h2>Sensor Dashboard</h2>
             <SensorStatus/>

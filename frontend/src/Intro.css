@@ -4,6 +4,7 @@
     /*background: url('Assets/Background.png') center/cover no-repeat;*/
     /*display: flex;*/
     flex-direction: column;
+
     /*justify-content: center;*/
     /*align-items: center;*/
     color: #fff;
@@ -15,6 +16,11 @@
 }
 
 .intro-container p {
-    margin-bottom: 0; /* keep paragraphs tight if you prefer */
+    margin-bottom: 0;
+
     /*padding-left: 2.2rem;*/
+}
+
+.intro-text {
+    width: 75%;
 }

@@ -1,67 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import './SensorStatus.css'
+import './SensorStatus.css';
 
-function SensorStatus() {
-    const [status, setStatus] = useState(null);
-    const [latestMeasurement, setLatestMeasurement] = useState(null);
+function SensorStatusList() {
+    const [sensorMeasurements, setSensorMeasurements] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (process.env.NODE_ENV === 'development') {
-            // Use fake data in development for easier testing
-            const fakeData = {
-                value: 21.5,
-                timestamp: new Date().toISOString()
-            };
+        // ← here’s the only change:
+        const apiBase = process.env.NODE_ENV === 'development'
+            ? 'http://localhost:8000'
+            : 'https://utah-skyscope.deno.dev';
 
-            const simulateFetch = () =>
-                new Promise((resolve) => setTimeout(() => resolve(fakeData), 500));
-
-            simulateFetch().then(handleData).catch(console.error);
-        } else {
-            // Use the real API call in production
-            fetch('https://utah-skyscope.deno.dev/sensorData/latest')
-                .then((res) => res.json())
-                .then(handleData)
-                .catch((err) => console.error('Error fetching sensor status:', err));
-        }
+        fetch(`${apiBase}/sensors`)
+            .then(res => res.json())
+            .then(sensors =>
+                Promise.all(
+                    sensors.map(({ name, sensor_id }) =>
+                        fetch(`${apiBase}/sensorData/latest?sensorId=${sensor_id}`)
+                            .then(r => r.json())
+                            .then(data => ({ name, id: sensor_id, data }))
+                            .catch(() => ({ name, id: sensor_id, error: true }))
+                    )
+                )
+            )
+            .then(results => {
+                setSensorMeasurements(results);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Error fetching sensors or data:", err);
+                setLoading(false);
+            });
     }, []);
 
-    function handleData(data) {
-        setLatestMeasurement(data);
-        if (data && data.timestamp) {
-            const reportedTime = new Date(data.timestamp);
-            const now = new Date();
-            const diffMinutes = (now - reportedTime) / 1000 / 60;
-            setStatus(diffMinutes <= 10 ? 'online' : 'offline');
-        }
-    }
+    if (loading) return <p>Loading sensors…</p>;
 
     return (
-        <div className="sensor-card">
-            <h2>Sensor Name</h2>
-            <button
-                style={{
-                    background: status === 'online' ? 'green' : 'red',
-                    color: 'white',
-                    padding: '10px'
-                }}
-            >
-                {status ? (status === 'online' ? 'Online' : 'Offline') : 'Loading...'}
-            </button>
-            {latestMeasurement && (
-                <div>
-                    <p>
-                        <strong>Latest Measurement</strong><br />
-                        {latestMeasurement.value} mag/arcsec<sup>2</sup>
-                    </p>
-                    <p>
-                        <strong>UTC Timestamp</strong><br />
-                        {new Date(latestMeasurement.timestamp).toLocaleString()}
-                    </p>
-                </div>
-            )}
+        <div className="sensor-status-container">
+            {sensorMeasurements.map(({ name, id, data, error }) => {
+                if (error || !data || data.error) {
+                    return (
+                        <div key={id} className="sensor-card">
+                            <h2>{name}</h2>
+                            <p>Error loading data.</p>
+                        </div>
+                    );
+                }
+
+                const reported = new Date(data.timestamp);
+                const minutesAgo = (Date.now() - reported.getTime()) / 1000 / 60;
+                const status = minutesAgo <= 10 ? 'online' : 'offline';
+
+                return (
+                    <div key={id} className="sensor-card">
+                        <h2>{name}</h2>
+                        <button
+                            style={{
+                                background: status === 'online' ? 'green' : 'red',
+                                color: 'white',
+                                padding: '10px'
+                            }}
+                        >
+                            {status === 'online' ? 'Online' : 'Offline'}
+                        </button>
+
+                        <div>
+                            <p>
+                                <strong>Latest Measurement</strong><br/>
+                                {data.value} mag/arcsec<sup>2</sup>
+                            </p>
+                            <p>
+                                <strong>Local Timestamp</strong><br/>
+                                {new Date(data.timestamp).toLocaleString('en-US', {
+                                    month:    '2-digit',
+                                    day:      '2-digit',
+                                    year:     'numeric',
+                                    hour:     '2-digit',
+                                    minute:   '2-digit',
+                                    hour12:   false
+                                })}
+
+
+                            </p>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }
 
-export default SensorStatus;
+export default SensorStatusList;
