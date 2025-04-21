@@ -1,0 +1,11 @@
+/**
+ * File: frontend/src/Components/css/DataPage.css
+ * Author: Connor Vardakis
+ * Date: 4/2/25
+ * Updated: 4/20/25
+ * Description: DataPage.css returns the formating for the DataPage.jsx html
+ **/
+
+.about {
+    margin: 12rem auto;
+}

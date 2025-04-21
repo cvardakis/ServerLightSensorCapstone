@@ -1,0 +1,33 @@
+/**
+ * File: frontend/src/Components/css/ReactChartLine.css
+ * Author: Connor Vardakis
+ * Date: 4/2/25
+ * Updated: 4/20/25
+ * Description: ReactChartLine.css returns the css formating for the ReactChartLine.jsx html
+ **/
+
+.menuContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.menuContainer section {
+    flex: 1;
+    padding: .5rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    margin: 0 10px;
+}
+
+.menuContainer section:first-child {
+    margin-left: 0;
+}
+
+.menuContainer section:last-child {
+    margin-right: 0;
+}
+
+.section2 div {
+    margin-bottom: 1rem;
+}

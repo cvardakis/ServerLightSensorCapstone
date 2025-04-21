@@ -1,0 +1,20 @@
+/**
+ * File: frontend/src/Components/css/Intro.css
+ * Author: Connor Vardakis
+ * Date: 3/25/25
+ * Updated: 4/20/25
+ * Description: Intro.css passes all css styling for Intro.jsx.
+ **/
+
+.intro-container {
+    flex-direction: column;
+    color: #fff;
+}
+
+.intro-container p {
+    margin-bottom: 0;
+}
+
+.intro-text {
+    width: 75%;
+}

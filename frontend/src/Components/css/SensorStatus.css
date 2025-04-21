@@ -1,0 +1,28 @@
+/**
+ * File: frontend/src/Components/css/SensorStatus.css
+ * Author: Connor Vardakis
+ * Date: 3/25/25
+ * Updated: 4/20/25
+ * Description: SensorStatus.css returns the formating for the SensorStatus.jsx html
+ **/
+
+.sensor-card{
+    background-color: rgba(50, 50, 50, 0.5);
+    border-radius: 1rem;
+    padding: 1rem;
+    display: inline-block;
+    text-align: center;
+}
+
+.sensor-status-container {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+p {
+    text-color: white;
+}

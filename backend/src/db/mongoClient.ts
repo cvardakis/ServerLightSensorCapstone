@@ -1,16 +1,18 @@
 /**
  * File: backend/src/db/mongoClient.ts
- * Author:
+ * Author: Connor Vardakis
  * Date: 2/12/25
- * Updated: 2/17/25
+ * Updated: 4/20/25
  * Description: mongoClient.ts handles connection to MonoDB for DB access
  * */
+
 import { MongoClient, ServerApiVersion } from "mongodb";
 import "https://deno.land/std@0.221.0/dotenv/load.ts";
 
-// Get MongoDB URL from environmental variables
+// Get MongoDB URI from environmental variables
 const uri = Deno.env.get("MONGO_URI");
 
+// Shutdown if MongoDB URI not found
 if (!uri) {
     console.error("[ERROR] MongoClient URI is missing");
     Deno.exit(1);

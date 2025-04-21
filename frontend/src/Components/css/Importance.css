@@ -1,0 +1,11 @@
+/**
+ * File: frontend/src/Components/css/Importance.css
+ * Author: Connor Vardakis
+ * Date: 4/19/25
+ * Updated: 4/20/25
+ * Description: Importance.css passes all css styling for Importance.jsx
+ **/
+
+.importance-container {
+    width: 75%;
+}

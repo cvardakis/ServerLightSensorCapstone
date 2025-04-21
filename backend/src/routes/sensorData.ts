@@ -2,23 +2,25 @@
  * File: backend/src/routes/sensorData.ts
  * Author:
  * Date: 2/12/25
- * Updated: 2/17/25
- * Description: Handles posting of incoming data to the database if the sensor is authenticated,
+ * Updated: 4/20/25
+ * Description: sensorData.ts handles posting of incoming data to the database if the sensor is authenticated,
  *              and provides endpoints to retrieve sensor data.
  */
 
 import { Router } from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import { sensorCollection, sensorDataCollection } from "../db/mongoClient.ts";
 
+// New routers for routing new requests
 const sensorDataRouter = new Router();
 
-// Revised POST handler that works directly with the context.
+// POST handler for adding new sensor data
 sensorDataRouter.post("/sensor-data", async (ctx) => {
     try {
-        // Parse JSON payload using Oak's body parser.
+        // Expected JSON request
         const body = await ctx.request.body({ type: "json" }).value;
 
         /**
+         * Checking all expected components are present
          * Expected Information:
          * sensor id, utc, local, temp, counts, frequency, reading
          */
@@ -37,7 +39,7 @@ sensorDataRouter.post("/sensor-data", async (ctx) => {
             return;
         }
 
-        // Ensure the sensor ID exists in the database.
+        // Ensure the sensor ID exists in the database
         const sensorExists = await sensorCollection.findOne({ sensor_id: body.id });
         if (!sensorExists) {
             console.log("[INFO] Sensor attempted to send data without authenticating");
@@ -46,7 +48,7 @@ sensorDataRouter.post("/sensor-data", async (ctx) => {
             return;
         }
 
-        // Store sensor measurement data.
+        // Store sensor measurement data
         const result = await sensorDataCollection.insertOne({
             sensor_id: body.id,
             utc: body.utc,
@@ -67,20 +69,19 @@ sensorDataRouter.post("/sensor-data", async (ctx) => {
     }
 });
 
-// GET endpoint to retrieve the latest sensor data.
-// GET endpoint to retrieve the latest sensor data.
+// GET endpoint to retrieve the latest sensor data for specified sensor
 sensorDataRouter.get("/sensorData/latest", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensorData/latest");
 
-        // grab sensorId if provided
+        // Grabs provided sensorId
         const sensorId = ctx.request.url.searchParams.get("sensorId");
         const filter: Record<string, unknown> = {};
         if (sensorId) {
             filter.sensor_id = sensorId;
         }
 
-        // sort most‐recent first, limit to one
+        // Query 1 result for specified sensor
         const sort = { "local": -1 };
         const latestCursor = sensorDataCollection.find(filter, { sort, limit: 1 });
         const result = await latestCursor.toArray();
@@ -105,24 +106,24 @@ sensorDataRouter.get("/sensorData/latest", async (ctx) => {
     }
 });
 
-// GET endpoint for the last 12 hours.
+// Get endpoint that returns the last 12 hours of 1 sensor (no filter options) - not used in deployment
 sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensorData/last12hours");
 
+        // Constructs ISO date string for querying DB for the last 12 hours of UTC time
         const now = new Date();
         console.log("[TROUBLESHOOT] Current Date ", now.toISOString());
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-        // Convert to an ISO string without milliseconds if needed.
         const twelveHoursAgoString = twelveHoursAgo.toISOString().split('.')[0];
         console.log("[TROUBLESHOOT] 12 hours ago: ", twelveHoursAgoString);
 
-        // Filter: documents whose utc is greater than or equal to twelveHoursAgoString.
+        // Build Query for MongoDB
         const filter = { utc: { $gte: twelveHoursAgoString } };
         const project = { utc: 1, local: 1, temp: 1, reading: 1, _id: 0 };
         const sort = { local: 1 };
 
-        // Retrieve the documents as an array.
+        // Retrieve the documents as an array
         const latestCursor = sensorDataCollection.find(filter, { projection: project, sort });
         const result = await latestCursor.toArray();
 
@@ -145,15 +146,13 @@ sensorDataRouter.get("/sensorData/last12hours", async (ctx) => {
     }
 });
 
-// GET endpoint to retrieve the list of sensors.
+// GET endpoint to retrieve the list of registered sensors
 sensorDataRouter.get("/sensors", async (ctx) => {
     try {
         console.log("[INFO] Route hit: /sensors");
 
-        // Define the projection object.
+        // Define MongoDB Query
         const projection = { name: 1, sensor_id: 1, _id: 0 };
-
-        // Use an empty filter {} to retrieve all documents, and pass the projection as the second argument.
         const cursor = sensorCollection.find({}, { projection });
         const result = await cursor.toArray();
 
@@ -173,7 +172,7 @@ sensorDataRouter.get("/sensors", async (ctx) => {
     }
 });
 
-// GET endpoint for filtered sensor data.
+// GET endpoint for user to pass set parameter sof sensors, start time, start date, end time, end date
 sensorDataRouter.get("/sensorData/filter", async (ctx) => {
     try {
         // Extract query params
@@ -188,31 +187,32 @@ sensorDataRouter.get("/sensorData/filter", async (ctx) => {
 
         const filter: Record<string, unknown> = {};
 
-        // Sensor filter
+        // Split to see if multiple sensors are present
         if (sensorParam) {
+            // Put all requested sensors on a Map
             const sensorArray = sensorParam.split(",").map(s => s.trim());
             filter.sensor_id = { $in: sensorArray };
         }
 
-        // Build raw local-time strings (no UTC conversion)
+        // Helper function to build raw local-time strings
         const buildLocalString = (
             dateStr: string | null,
             timeStr: string | null,
             defaultTime: string
         ): string | null => {
             if (!dateStr) return null;
-            const time = timeStr ? timeStr : defaultTime;
+            const time = timeStr ? timeStr : defaultTime; // if timeString is provided use that or use default time
             // Ensure HH:mm:ss format
             const normalized = time.length <= 5 ? `${time}:00` : time;
-            return `${dateStr}T${normalized}`;
+            return `${dateStr}T${normalized}`; // String built to match DB field structure
         };
 
+        // Build time strings for Mongo Query
         const startLocal = buildLocalString(startDate, startTime, "00:00:00");
         const endLocal   = buildLocalString(endDate,   endTime,   "23:59:59");
 
-        // Apply range filter on local (strings)
+        // Construct time filter for query
         if (startLocal && endLocal) {
-            // Optional check: ensure start <= end
             if (new Date(startLocal) > new Date(endLocal)) {
                 ctx.response.status = 400;
                 ctx.response.body = { error: "Start date/time is after end date/time." };

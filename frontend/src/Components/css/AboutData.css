@@ -1,0 +1,28 @@
+/**
+ * File: frontend/src/Components/css/AboutData.css
+ * Author: Connor Vardakis
+ * Date: 3/25/25
+ * Updated: 4/20/25
+ * Description: Defines CSS properties for AboutData.jsx
+ **/
+
+.about-data {
+    color: #fff;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+.about-data h2 {
+    margin-top: 2rem;
+}
+
+.about-data p {
+    line-height: 1.5;
+    width: 75%;
+}
+
+.about-text {
+    display: flex;
+    flex-direction: column;
+}
